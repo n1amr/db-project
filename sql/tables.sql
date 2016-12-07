@@ -1,5 +1,5 @@
 USE ecommerce;
-DROP TABLE IF EXISTS User;
+
 CREATE TABLE User (
   ID            INTEGER PRIMARY KEY NOT NULL,
   FirstName     VARCHAR(64),
@@ -12,3 +12,15 @@ CREATE TABLE User (
 
 CREATE INDEX X_User_Email
   ON User (Email);
+
+
+CREATE CREATE TABLE UserPhone (
+  PhoneNumber VARCHAR(20) PRIMARY KEY NOT NULL,
+  UserID      INTEGER,
+  FOREIGN KEY (UserID) REFERENCES User (id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+);
+
+CREATE INDEX X_UserPhone_PnoneNumber
+  ON UserPhone (PhoneNumber);
