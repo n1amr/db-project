@@ -1,10 +1,10 @@
 USE ecommerce;
 
 CREATE TABLE User (
-  ID            INTEGER PRIMARY KEY NOT NULL,
+  ID            INTEGER PRIMARY KEY NOT NULL AUTO_INCREMENT,
   FirstName     VARCHAR(64),
   LastName      VARCHAR(64),
-  Email         VARCHAR(256) UNICODE,
+  Email         VARCHAR(256) UNIQUE,
   Password      VARCHAR(256),
   Address       VARCHAR(1024),
   BankAccountNo VARCHAR(256)
@@ -16,7 +16,8 @@ CREATE INDEX X_User_Email
 
 CREATE TABLE UserPhone (
   PhoneNumber VARCHAR(20) PRIMARY KEY NOT NULL,
-  UserID      INTEGER REFERENCES User (ID)
+  UserID      INTEGER,
+  FOREIGN KEY (UserID) REFERENCES User (ID)
     ON DELETE CASCADE
     ON UPDATE CASCADE
 );
@@ -25,65 +26,73 @@ CREATE INDEX X_UserPhone_PhoneNumber
   ON UserPhone (PhoneNumber);
 
 CREATE TABLE Customer (
-  UserID  INTEGER PRIMARY KEY NOT NULL REFERENCES User (ID)
+  UserID  INTEGER PRIMARY KEY NOT NULL,
+  Balance DECIMAL(10, 2),
+  FOREIGN KEY (UserID) REFERENCES User (ID)
     ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  Balance DECIMAL(10, 2)
+    ON UPDATE CASCADE
 );
 
 CREATE TABLE Supplier (
-  UserID      INTEGER PRIMARY KEY NOT NULL REFERENCES User (ID)
+  UserID      INTEGER PRIMARY KEY NOT NULL,
+  CompanyName VARCHAR(256),
+  FOREIGN KEY (UserID) REFERENCES User (ID)
     ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  CompanyName VARCHAR(256)
+    ON UPDATE CASCADE
 );
 
 CREATE TABLE Product (
-  ID                 INTEGER PRIMARY KEY NOT NULL,
+  ID                 INTEGER PRIMARY KEY NOT NULL  AUTO_INCREMENT,
   Name               VARCHAR(256),
   Description        VARCHAR(4096),
-  Price              DECIMAL(8, 2),
-  AvailableQuantitiy INTEGER,
-  SupplierID         INTEGER REFERENCES Supplier (UserID)
+  Price              DECIMAL(8, 2)       NOT NULL,
+  AvailableQuantitiy INTEGER                       DEFAULT 0,
+  SupplierID         INTEGER,
+  FOREIGN KEY (SupplierID) REFERENCES Supplier (UserID)
     ON DELETE RESTRICT
     ON
     UPDATE CASCADE
 );
 
 CREATE TABLE Orders (
-  ID              INTEGER PRIMARY KEY NOT NULL,
-  UserID          INTEGER REFERENCES User (ID)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
+  ID              INTEGER PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  UserID          INTEGER,
   OrderDate       DATETIME,
   Status          VARCHAR(10),
   ShippingName    VARCHAR(256),
   ShippingAddress VARCHAR(2048),
-  ShippingPhone   VARCHAR(20)
+  ShippingPhone   VARCHAR(20),
+  FOREIGN KEY (UserID) REFERENCES User (ID)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
 );
 
 CREATE TABLE OrderItem (
-  OrderID  INTEGER NOT NULL REFERENCES Orders (ID)
+  OrderID   INTEGER NOT NULL,
+  ProductID INTEGER NOT NULL,
+  Quantity  INTEGER DEFAULT 1,
+  PRIMARY KEY (OrderID, ProductID),
+  FOREIGN KEY (OrderID) REFERENCES Orders (ID)
     ON DELETE
     CASCADE
     ON UPDATE CASCADE,
-  UserID   INTEGER NOT NULL REFERENCES User (ID)
+  FOREIGN KEY (ProductID) REFERENCES Product (ID)
     ON DELETE
     CASCADE
-    ON UPDATE CASCADE,
-  Quantity INTEGER,
-  PRIMARY KEY (OrderID, UserID)
+    ON UPDATE CASCADE
 );
 
 CREATE TABLE CartItem (
-  OrderID  INTEGER NOT NULL REFERENCES Orders (ID)
+  UserID    INTEGER NOT NULL,
+  ProductID INTEGER NOT NULL,
+  Quantity  INTEGER DEFAULT 0,
+  PRIMARY KEY (UserID, ProductID),
+  FOREIGN KEY (UserID) REFERENCES User (ID)
     ON DELETE
     CASCADE
     ON UPDATE CASCADE,
-  UserID   INTEGER NOT NULL REFERENCES User (ID)
+  FOREIGN KEY (ProductID) REFERENCES Product (ID)
     ON DELETE
     CASCADE
-    ON UPDATE CASCADE,
-  Quantity INTEGER,
-  PRIMARY KEY (OrderID, UserID)
+    ON UPDATE CASCADE
 );
